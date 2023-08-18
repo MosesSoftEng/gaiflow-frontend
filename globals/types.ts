@@ -5,9 +5,9 @@
 /*
  * Global types for flow components.
  */
-interface Component {
-    id: number; // TODO: Rename to index.
-    title: string;
-    type: string;
-    nextComponentsIds: number[];
+interface AIStep {
+	id: number; // TODO: Rename to index.
+	type: string;
+	title: string;
+	value: string;
 }
