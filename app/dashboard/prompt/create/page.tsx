@@ -1,165 +1,113 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import ComponentDisplay from "@/components/flow/ComponentDisplay";
-import { aiStepTypes } from "@/globals/global";
-import { updateComponentInFlow } from "@/lib/components/flowComponentsHelpers";
-import { hardCopyObject } from "@/utils/globalFunctions";
+import React from "react";
+import StepTypeUI from "@/components/flow/StepTypeUI";
+import { aiStepsTypes } from "@/globals/global";
+import { FlowModule } from "@/components/flow/FlowModule";
 
 export default function CreatePrompt() {
-	const [flow, setFlow] = useState<Component[]>([]);
+	const { flow, setFlow, activeStep, setActiveStep, addStepToFlow, updateStepInFlow, removeLastStepFromFlow } =
+		FlowModule();
 
-	const [activeComponent, setActiveComponent] = useState<Component>({
-		id: -1,
-		title: "",
-		type: "",
-		nextComponentsIds: [],
-	});
-
-	/*
-	 * Flow and flow components functions.
-	 * TODO: Move flow functions to it's own service moddule - appComponentsHelpers.ts.
+	/**
+	 * Handles the change event when an input value is modified.
+	 * Updates the active step's property, then updates the step in the flow.
+	 * @param {React.ChangeEvent<HTMLInputElement>} e - The change event.
 	 */
-	const addComponentToFlow = (newComponent: Component) => {
-		// Update newComponent id to match insertion index.
-		const updatedComponent = { ...newComponent, id: flow.length };
-
-		//* Add newComponent id in lastComponent nextComponentsIds.
-		let lastComponentNextComponentsIds: number[] = [];
-
-		if (flow.length > 0) {
-			const lastComponent = flow[flow.length - 1];
-			lastComponentNextComponentsIds = lastComponent.nextComponentsIds;
-			lastComponentNextComponentsIds.push(updatedComponent.id);
-		}
-
-		const updatedFlow: Component[] = setNextComponentsIdsForComponentAtIndexInFlow(
-			flow,
-			flow.length - 1,
-			lastComponentNextComponentsIds
-		);
-
-		// Add to the end of flow.
-		setFlow([...updatedFlow, hardCopyObject(updatedComponent)]);
-	};
-
-	// TODO: Add docs.
-	const setNextComponentsIdsForComponentAtIndexInFlow = (
-		flow: Component[],
-		index: number,
-		nextComponentsIds: number[]
-	): Component[] => {
-		if (index < 0 || index >= flow.length) {
-			// Invalid index, do nothing
-			return flow;
-		}
-
-		console.log(index);
-
-		const updatedComponent = { ...flow[index], nextComponentsIds };
-
-		return flow.map((component, i) => (i === index ? updatedComponent : component));
-	};
-
-	/*
-	 * UI functions.
-	 */
-	// TODO: Add docs.
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		if (activeStep === null) return;
+
 		const { name, value } = e.target;
 
-		// Update component property.
-		setActiveComponent({ ...activeComponent, [name]: value });
+		// Update active step property.
+		setActiveStep({ ...activeStep, [name]: value });
 
-		// Update component in flow.
-		setFlow(updateComponentInFlow(flow, activeComponent));
+		// Update step in flow.
+		setFlow(updateStepInFlow(flow, activeStep));
 	};
-
-	const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value } = e.target;
-		const index = parseInt(value);
-
-		const updatedNextComponents = activeComponent.nextComponentsIds.includes(index)
-			? activeComponent.nextComponentsIds.filter((id) => id !== index)
-			: [...activeComponent.nextComponentsIds, index];
-
-		setActiveComponent({ ...activeComponent, nextComponentsIds: updatedNextComponents });
-	};
-
-	/*
-	 * Effects.
-	 */
-	useEffect(() => {
-		// console.log(flow);
-	}, [flow]);
-
-	useEffect(() => {
-		console.log(activeComponent);
-	}, [activeComponent]);
 
 	return (
-		<>
-			<div className="flex">
-				{/*AISteps Types */}
-				<div className="flex-shrink-0 w-64">
-					<h1>Components.</h1>
+		<div className="flex">
+			<div className="flex-shrink-0 w-64">
+				<h1>AI Steps Types.</h1>
 
-					{aiStepTypes.map((component: Component, index: number) => (
-						<ComponentDisplay key={index} component={component} addComponentToFlow={addComponentToFlow} />
-					))}
-				</div>
-
-				<div className="flex-1">
-					<h1>Flow.</h1>
-
-					<ul>
-						{flow.map((component: Component, index: number) => (
-							<li
-								key={index}
-								onClick={() => {
-									setActiveComponent(component);
-								}}
-							>
-								{component.id}. {component.type}.
-								<br />
-								title: {component.title}.
-								<br />
-								nextComponentsIds: {component.nextComponentsIds[0]}.
-							</li>
-						))}
-					</ul>
-				</div>
-
-				<div className="flex-shrink-0 w-64">
-					<h1>Component properties.</h1>
-
-					<div>
-						Title:
-						<br />
-						<input name="title" value={activeComponent.title} onChange={handleChange} className="text-black" />
-					</div>
-
-					<div>
-						Next Component Ids:
-						<br />
-						{flow.map((component: Component, index: number) => (
-							<div key={index}>
-								<label htmlFor={`checkbox-${component.id}`}>
-									<input
-										type="checkbox"
-										id={`checkbox-${component.id}`}
-										value={component.id}
-										checked={activeComponent.nextComponentsIds.includes(component.id)}
-										onChange={(e) => {
-											handleCheckboxChange(e, component.id);
-										}}
-									/>
-								</label>
-								{component.id}
-							</div>
-						))}
-					</div>
-				</div>
+				{aiStepsTypes.map((step: AIStep, index: number) => (
+					<StepTypeUI key={index} step={step} addStepToFlow={addStepToFlow} />
+				))}
 			</div>
-		</>
+
+			<div className="flex-1">
+				<h1>Steps Flow.</h1>
+
+				<ul>
+					{flow.map((step: AIStep, index: number) => (
+						// TODO: Create step UI component.
+						<li
+							key={index}
+							onClick={() => {
+								setActiveStep(step);
+							}}
+						>
+							{step.id}. {step.type}.
+							<br />
+							title: {step.title}.
+						</li>
+					))}
+
+					<li>
+						{/* TODO: Style button */}
+						{flow.length > 0 ? <button onClick={removeLastStepFromFlow}> Remove last step</button> : ""}
+					</li>
+				</ul>
+			</div>
+
+			<div className="flex-shrink-0 w-64">
+				<h1>Step properties.</h1>
+
+				<ul className="w-96">
+					{activeStep ? (
+						<>
+							{/* TODO: Convert li to a resusable UI component */}
+							<li
+								className="w-full border-b-2 border-neutral-100 border-opacity-100 py-4
+										dark:border-opacity-50"
+							>
+								ID:
+								<br />
+								{activeStep.id}
+							</li>
+
+							<li
+								className="w-full border-b-2 border-neutral-100 border-opacity-100 py-4
+										dark:border-opacity-50"
+							>
+								Type:
+								<br />
+								{activeStep.type}
+							</li>
+
+							<li
+								className="w-full border-b-2 border-neutral-100 border-opacity-100 py-4
+										dark:border-opacity-50"
+							>
+								Title:
+								<br />
+								<input name="title" value={activeStep.title} onChange={handleChange} className="text-black" />
+							</li>
+
+							<li
+								className="w-full border-b-2 border-neutral-100 border-opacity-100 py-4
+										dark:border-opacity-50"
+							>
+								Value:
+								<br />
+								<input name="value" value={activeStep.value} onChange={handleChange} className="text-black" />
+							</li>
+						</>
+					) : (
+						<div className="text-center py-4">No active step selected.</div>
+					)}
+				</ul>
+			</div>
+		</div>
 	);
 }
