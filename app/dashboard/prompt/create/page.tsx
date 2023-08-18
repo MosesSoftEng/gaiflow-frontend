@@ -1,8 +1,8 @@
 "use client";
 import React from "react";
-import StepTypeUI from "@/components/flow/StepTypeUI";
+import StepTypeComponent from "@/components/flow/step-type-component";
 import { aiStepsTypes } from "@/globals/global";
-import { FlowModule } from "@/components/flow/FlowModule";
+import { FlowModule } from "@/components/flow/flow-module";
 
 export default function CreatePrompt() {
 	const { flow, setFlow, activeStep, setActiveStep, addStepToFlow, updateStepInFlow, removeLastStepFromFlow } =
@@ -31,7 +31,7 @@ export default function CreatePrompt() {
 				<h1>AI Steps Types.</h1>
 
 				{aiStepsTypes.map((step: AIStep, index: number) => (
-					<StepTypeUI key={index} step={step} addStepToFlow={addStepToFlow} />
+					<StepTypeComponent key={index} step={step} addStepToFlow={addStepToFlow} />
 				))}
 			</div>
 
