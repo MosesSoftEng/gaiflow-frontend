@@ -5,8 +5,9 @@
 /*
  * Global varibles for flow components.
  */
-export const componentsTypes: Component[] = [
-  { id: -1, title: "Input Component", type: "input", nextComponentsIds: []},
-  { id: -1, title: "Command Component", type: "command", nextComponentsIds: []},
-  { id: -1, title: "Output Component", type: "output", nextComponentsIds: []},
+export const aiStepsTypes: AIStep[] = [
+	{ id: -1, title: "Prompt Component", type: "prompt", value: "" },
+	{ id: -1, title: "Input Component", type: "input", value: "" },
+	{ id: -1, title: "Command Component", type: "command", value: "" },
+	{ id: -1, title: "Output Component", type: "output", value: "" },
 ];
